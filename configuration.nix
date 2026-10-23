@@ -43,11 +43,22 @@
     networkmanager.enable = true;
   };
 
-  hardware.graphics.enable = true;
+  # according to gemini, to handle hardware decoding
+  hardware.graphics = {
+    enable = true;
+    extraPackages = with pkgs; [ nvidia-vaapi-driver ];
+  };
+
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia = {
     modesetting.enable = true;
-    open = false;
+    open = true;
+  };
+
+  # Add this so Wayland applications use the driver:
+  environment.variables = {
+    LIBVA_DRIVER_NAME = "nvidia";
+    NVD_BACKEND = "direct";
   };
 
   services.pipewire = {
@@ -103,6 +114,11 @@
         exec = "tidal-hifi --no-sandbox %U";
         terminal = false;
       };
+      
+      home.sessionVariables = {
+        # Encourage Qt apps to run natively on Wayland instead of XWayland
+        QT_QPA_PLATFORM = "wayland";
+      };
 
       home.packages = with pkgs; [
         tree
@@ -117,7 +133,8 @@
         pavucontrol
         prismlauncher
         playerctl
-        inputs.bedrock-on-linux.packages.${pkgs.system}.default
+        inputs.bedrock-on-linux.packages.${pkgs.stdenv.hostPlatform.system}.default
+        jellyfin-mpv-shim
       ];
       
       programs.firefox = {
