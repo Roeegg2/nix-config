@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 {
   imports = [
@@ -14,8 +14,10 @@
     shellAliases = {
       start = "sway --unsupported-gpu";
       nixe = "nvim ~/nix-config/configuration.nix";
+      nixf = "nvim ~/nix-config/flakes.nix";
       nixb = "sudo nixos-rebuild switch --flake ~/nix-config#roeetnixos";
-      nixu = "nix flake update --flake ~/nix-config && sudo nixos-rebuild switch --flake ~/nix-config#roeetnixos && flatpak update -y";
+      # stuck that first sudo in so I can input the password at the start hehe
+      nixu = "sudo nix flake update --flake ~/nix-config && sudo nixos-rebuild switch --flake ~/nix-config#roeetnixos && flatpak update -y";
     };
 
     sessionVariables = {
@@ -115,6 +117,7 @@
         pavucontrol
         prismlauncher
         playerctl
+        inputs.bedrock-on-linux.packages.${pkgs.system}.default
       ];
       
       programs.firefox = {
