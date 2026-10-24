@@ -17,7 +17,7 @@
       nixf = "nvim ~/nix-config/flakes.nix";
       nixb = "sudo nixos-rebuild switch --flake ~/nix-config#roeetnixos";
       # stuck that first sudo in so I can input the password at the start hehe
-      nixu = "sudo nix flake update --flake ~/nix-config && sudo nixos-rebuild switch --flake ~/nix-config#roeetnixos && flatpak update -y";
+      nixu = "sudo nix flake update --flake ~/nix-config && sudo nixos-rebuild switch --flake ~/nix-config#roeetnixos";
     };
 
     sessionVariables = {
@@ -78,12 +78,13 @@
     wrapperFeatures.gtk = true;
   };
 
-  services.flatpak.enable = true;
-
   # for remote access with nautilus
   services.gvfs.enable = true;
 
   programs.kdeconnect.enable = true;
+
+  programs.gamemode.enable = true;
+  programs.gamescope.enable = true;
 
   environment.systemPackages = with pkgs; [
     vim
@@ -98,7 +99,7 @@
 
   users.users.roeet = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "video" ];
+    extraGroups = [ "wheel" "networkmanager" "video" "gamemode" ];
   };
 
   home-manager = {
@@ -114,10 +115,20 @@
         exec = "tidal-hifi --no-sandbox %U";
         terminal = false;
       };
-      
+
+      xdg.mimeApps.enable = true;
+      xdg.mimeApps.defaultApplications = {
+        "text/html" = "firefox";
+        "x-scheme-handler/http" = "firefox";
+        "x-scheme-handler/https" = "firefox";
+        "x-scheme-handler/about" = "firefox";
+        "x-scheme-handler/unknown" = "firefox";
+      };
+
       home.sessionVariables = {
         # Encourage Qt apps to run natively on Wayland instead of XWayland
         QT_QPA_PLATFORM = "wayland";
+        BROWSER = "firefox";
       };
 
       home.packages = with pkgs; [
@@ -231,6 +242,14 @@
         };
       };
 
+      programs.mangohud = {
+        enable = true;
+        enableSessionWide = false;
+        settings = {
+          full = true;
+        };
+      };
+
       programs.neovim = {
         enable = true;
         defaultEditor = true;
@@ -275,6 +294,11 @@
       wayland.windowManager.sway = {
         enable = true;
 
+        # enable tearing
+        extraConfig = ''
+          for_window [class=".*"] tearing enable
+        '';
+
         config = {
 	      modifier = "Mod4";
           terminal = "foot";
@@ -289,7 +313,7 @@
               mode = "3440x1440@180Hz";
               position = "1080,240";
               adaptive_sync = "on";
-              # render_bit_depth = "10";
+              render_bit_depth = "10";
               # hdr = "on";
             };
 
