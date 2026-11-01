@@ -5,6 +5,8 @@
     ./hardware-configuration.nix
   ];
 
+  nix.settings.experimental-features = ["nix-command" "flakes"];
+
   swapDevices = [ {
     device = "/var/lib/swapfile";
     size = 8192; # size in megabytes
@@ -14,10 +16,12 @@
     shellAliases = {
       start = "sway --unsupported-gpu";
       nixe = "nvim ~/nix-config/configuration.nix";
-      nixf = "nvim ~/nix-config/flakes.nix";
-      nixb = "sudo nixos-rebuild switch --flake ~/nix-config#roeetnixos";
-      # stuck that first sudo in so I can input the password at the start hehe
-      nixu = "sudo nix flake update --flake ~/nix-config && sudo nixos-rebuild switch --flake ~/nix-config#roeetnixos";
+      nixf = "nvim ~/nix-config/flake.nix";
+      nixb = "sudo nixos-rebuild switch --flake ~/nix-config#roeetnixos";   # make it permanent
+      nixt = "sudo nixos-rebuild test --flake ~/nix-config#roeetnixos";     # activate, but not the boot default
+      # sudo -v for "password up front" trick
+      nixu = "sudo -v && nix flake update --flake ~/nix-config && sudo nixos-rebuild test --flake ~/nix-config#roeetnixos && echo 'Looks fine? Run nixb to keep it.'";
+      nixr = "sudo nixos-rebuild switch --rollback";
     };
 
     sessionVariables = {
@@ -146,6 +150,7 @@
         playerctl
         inputs.bedrock-on-linux.packages.${pkgs.stdenv.hostPlatform.system}.default
         jellyfin-mpv-shim
+        discord
       ];
       
       programs.firefox = {
