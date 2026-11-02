@@ -15,14 +15,24 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, bedrock-on-linux, ... }@inputs: {
-    nixosConfigurations.roeetnixos = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      specialArgs = { inherit inputs; };
-      modules = [
-        ./configuration.nix
-        home-manager.nixosModules.home-manager
-      ];
+  outputs =
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      bedrock-on-linux,
+      ...
+    }@inputs:
+    {
+      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
+
+      nixosConfigurations.roeetnixos = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
+        modules = [
+          ./configuration.nix
+          home-manager.nixosModules.home-manager
+        ];
+      };
     };
-  };
 }

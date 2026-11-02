@@ -1,24 +1,35 @@
-{ config, lib, pkgs, inputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 
 {
   imports = [
     ./hardware-configuration.nix
   ];
 
-  nix.settings.experimental-features = ["nix-command" "flakes"];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
-  swapDevices = [ {
-    device = "/var/lib/swapfile";
-    size = 8192; # size in megabytes
-  } ];
+  swapDevices = [
+    {
+      device = "/var/lib/swapfile";
+      size = 8192; # size in megabytes
+    }
+  ];
 
   environment = {
     shellAliases = {
       start = "sway --unsupported-gpu";
       nixe = "nvim ~/nix-config/configuration.nix";
       nixf = "nvim ~/nix-config/flake.nix";
-      nixb = "sudo nixos-rebuild switch --flake ~/nix-config#roeetnixos";   # make it permanent
-      nixt = "sudo nixos-rebuild test --flake ~/nix-config#roeetnixos";     # activate, but not the boot default
+      nixb = "sudo nixos-rebuild switch --flake ~/nix-config#roeetnixos"; # make it permanent
+      nixt = "sudo nixos-rebuild test --flake ~/nix-config#roeetnixos"; # activate, but not the boot default
       # sudo -v for "password up front" trick
       nixu = "sudo -v && nix flake update --flake ~/nix-config && sudo nixos-rebuild test --flake ~/nix-config#roeetnixos && echo 'Looks fine? Run nixb to keep it.'";
       nixr = "sudo nixos-rebuild switch --rollback";
@@ -103,7 +114,12 @@
 
   users.users.roeet = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "video" "gamemode" ];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+      "video"
+      "gamemode"
+    ];
   };
 
   home-manager = {
@@ -152,7 +168,7 @@
         jellyfin-mpv-shim
         discord
       ];
-      
+
       programs.firefox = {
         enable = true;
 
@@ -221,8 +237,8 @@
         enable = true;
 
         includes = [
-            { path = "~/.gitconfig.local"; }
-          ];
+          { path = "~/.gitconfig.local"; }
+        ];
 
         settings = {
           init.defaultBranch = "main";
@@ -233,10 +249,10 @@
 
       programs.ssh = {
         enable = true;
-        
+
         # Suppresses the default values removal warning
         enableDefaultConfig = false;
-        
+
         # Replaces the deprecated matchBlocks
         settings = {
           "github.com" = {
@@ -305,7 +321,7 @@
         '';
 
         config = {
-	      modifier = "Mod4";
+          modifier = "Mod4";
           terminal = "foot";
           left = "h";
           down = "j";
@@ -360,17 +376,47 @@
           };
 
           # Assign workspaces to outputs
-	      workspaceOutputAssign = [
-            { workspace = "1"; output = "DP-3"; }
-            { workspace = "2"; output = "DP-3"; }
-            { workspace = "3"; output = "DP-3"; }
-            { workspace = "4"; output = "DP-3"; }
-            { workspace = "5"; output = "DP-3"; }
-            { workspace = "6"; output = "HDMI-A-1"; }
-            { workspace = "7"; output = "HDMI-A-1"; }
-            { workspace = "8"; output = "HDMI-A-1"; }
-            { workspace = "9"; output = "HDMI-A-1"; }
-            { workspace = "10"; output = "HDMI-A-1"; }
+          workspaceOutputAssign = [
+            {
+              workspace = "1";
+              output = "DP-3";
+            }
+            {
+              workspace = "2";
+              output = "DP-3";
+            }
+            {
+              workspace = "3";
+              output = "DP-3";
+            }
+            {
+              workspace = "4";
+              output = "DP-3";
+            }
+            {
+              workspace = "5";
+              output = "DP-3";
+            }
+            {
+              workspace = "6";
+              output = "HDMI-A-1";
+            }
+            {
+              workspace = "7";
+              output = "HDMI-A-1";
+            }
+            {
+              workspace = "8";
+              output = "HDMI-A-1";
+            }
+            {
+              workspace = "9";
+              output = "HDMI-A-1";
+            }
+            {
+              workspace = "10";
+              output = "HDMI-A-1";
+            }
           ];
         };
       };
