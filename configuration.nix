@@ -39,6 +39,7 @@
       EDITOR = "nvim";
       VISUAL = "nvim";
       SUDO_EDITOR = "nvim";
+      WLR_RENDERER = "vulkan";
     };
   };
 
@@ -58,24 +59,19 @@
     networkmanager.enable = true;
   };
 
-  # according to gemini, to handle hardware decoding
   hardware.graphics = {
     enable = true;
-    extraPackages = with pkgs; [ nvidia-vaapi-driver ];
   };
 
+  # name is misleading, this isn't for x11. it loads the nvidia drivers and blacklists nouveau + installs userspace libraries
   services.xserver.videoDrivers = [ "nvidia" ];
+
   hardware.nvidia = {
     modesetting.enable = true;
     open = true;
   };
 
-  # Add this so Wayland applications use the driver:
-  environment.variables = {
-    LIBVA_DRIVER_NAME = "nvidia";
-    NVD_BACKEND = "direct";
-  };
-
+  security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -89,8 +85,10 @@
   services.blueman.enable = true;
 
   programs.sway = {
+    extraSessionCommands = ''
+      export WLR_RENDERER=vulkan
+    '';
     enable = true;
-    wrapperFeatures.gtk = true;
   };
 
   # for remote access with nautilus
@@ -98,13 +96,11 @@
 
   programs.kdeconnect.enable = true;
 
-  programs.gamemode.enable = true;
-  programs.gamescope.enable = true;
-
   environment.systemPackages = with pkgs; [
     vim
     wget
     nautilus
+    killall
   ];
 
   # for stupid nuphyio to workk
@@ -118,7 +114,6 @@
       "wheel"
       "networkmanager"
       "video"
-      "gamemode"
     ];
   };
 
@@ -145,12 +140,6 @@
         "x-scheme-handler/unknown" = "firefox";
       };
 
-      home.sessionVariables = {
-        # Encourage Qt apps to run natively on Wayland instead of XWayland
-        QT_QPA_PLATFORM = "wayland";
-        BROWSER = "firefox";
-      };
-
       home.packages = with pkgs; [
         tree
         wofi
@@ -165,7 +154,14 @@
         prismlauncher
         playerctl
         inputs.bedrock-on-linux.packages.${pkgs.stdenv.hostPlatform.system}.default
-        jellyfin-mpv-shim
+        (pkgs.symlinkJoin {
+          name = "jellyfin-desktop-xcb";
+          paths = [ pkgs.jellyfin-desktop ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram $out/bin/jellyfin-desktop --set QT_QPA_PLATFORM xcb
+          '';
+        })
         discord
       ];
 
@@ -183,6 +179,7 @@
             "browser.aboutConfig.showWarning" = false;
             "privacy.trackingprotection.enabled" = true;
             "signon.rememberSignons" = false; # Disable built-in password manager (use Bitwarden instead)
+            "browser.startup.homepage" = "http://home.internal";
           };
         };
 
@@ -201,11 +198,6 @@
               installation_mode = "force_installed";
             };
 
-            "addon@darkreader.org" = {
-              install_url = "https://addons.mozilla.org/firefox/downloads/latest/darkreader/latest.xpi";
-              installation_mode = "force_installed";
-            };
-
             "{446900e4-71c2-419f-a6a7-df9c091e268b}" = {
               install_url = "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager/latest.xpi";
               installation_mode = "force_installed";
@@ -215,6 +207,11 @@
               install_url = "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock/latest.xpi";
               installation_mode = "force_installed";
             };
+            
+            "{d7742d87-e61d-4b78-b8a1-b469842139fa}" = {
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/vimium-ff/latest.xpi";
+          installation_mode = "force_installed";
+        };
           };
         };
       };
@@ -330,7 +327,7 @@
 
           # Monitor outputs configuration using the port names directly
           output = {
-            "DP-3" = {
+            "DP-1" = {
               mode = "3440x1440@180Hz";
               position = "1080,240";
               adaptive_sync = "on";
@@ -338,11 +335,16 @@
               # hdr = "on";
             };
 
-            "HDMI-A-1" = {
+            "DP-3" = {
               mode = "1920x1080@144Hz";
               position = "0,0";
               transform = "270";
             };
+            "HDMI-A-1" = {
+    # mode = "3840x2160@60Hz"; # Match your TV specs
+    position = "4520,0";
+    power = "off";
+  };
           };
 
           keybindings = lib.mkOptionDefault {
@@ -366,6 +368,9 @@
             "Mod4+Ctrl+Shift+1" = "input type:keyboard xkb_switch_layout 0";
             "Mod4+Ctrl+Shift+2" = "input type:keyboard xkb_switch_layout 1";
             "Mod4+Ctrl+Shift+3" = "input type:keyboard xkb_switch_layout 2";
+
+            # turn TV on/off
+            "Mod4+Shift+t" = "exec swaymsg output HDMI-A-1 power toggle";
           };
 
           input = {
@@ -379,42 +384,38 @@
           workspaceOutputAssign = [
             {
               workspace = "1";
-              output = "DP-3";
+              output = "DP-1";
             }
             {
               workspace = "2";
-              output = "DP-3";
+              output = "DP-1";
             }
             {
               workspace = "3";
-              output = "DP-3";
+              output = "DP-1";
             }
             {
               workspace = "4";
-              output = "DP-3";
+              output = "DP-1";
             }
             {
               workspace = "5";
-              output = "DP-3";
+              output = "DP-1";
             }
             {
               workspace = "6";
-              output = "HDMI-A-1";
+              output = "DP-3";
             }
             {
               workspace = "7";
-              output = "HDMI-A-1";
+              output = "DP-3";
             }
             {
               workspace = "8";
-              output = "HDMI-A-1";
+              output = "DP-3";
             }
             {
               workspace = "9";
-              output = "HDMI-A-1";
-            }
-            {
-              workspace = "10";
               output = "HDMI-A-1";
             }
           ];
