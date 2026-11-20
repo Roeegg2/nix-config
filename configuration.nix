@@ -33,6 +33,11 @@
       # sudo -v for "password up front" trick
       nixu = "sudo -v && nix flake update --flake ~/nix-config && sudo nixos-rebuild test --flake ~/nix-config#roeetnixos && echo 'Looks fine? Run nixb to keep it.'";
       nixr = "sudo nixos-rebuild switch --rollback";
+
+leeloos = ''
+  cd /home/roeet/Projects/leeloo
+  nix develop -c nvim /home/roeet/Projects/leeloo
+'';
     };
 
     sessionVariables = {
@@ -163,7 +168,29 @@
           '';
         })
         discord
+        github-copilot-cli
+        ripgrep
       ];
+
+      programs.qutebrowser = {
+        enable = true;
+
+        searchEngines = {
+          DEFAULT = "https://duckduckgo.com/?q={}";
+          np = "https://search.nixos.org/packages?query={}";
+          nw = "https://wiki.nixos.org/index.php?search={}";
+        };
+
+        settings = {
+          tabs.show = "multiple";
+          colors.webpage.darkmode.enabled = true;
+          url.start_pages = [ "https://search.nixos.org" ];
+        };
+
+        keyBindings.normal = {
+          ",m" = "spawn mpv {url}";
+        };
+      };
 
       programs.firefox = {
         enable = true;
@@ -207,11 +234,11 @@
               install_url = "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock/latest.xpi";
               installation_mode = "force_installed";
             };
-            
+
             "{d7742d87-e61d-4b78-b8a1-b469842139fa}" = {
-          install_url = "https://addons.mozilla.org/firefox/downloads/latest/vimium-ff/latest.xpi";
-          installation_mode = "force_installed";
-        };
+              install_url = "https://addons.mozilla.org/firefox/downloads/latest/vimium-ff/latest.xpi";
+              installation_mode = "force_installed";
+            };
           };
         };
       };
@@ -268,30 +295,79 @@
         };
       };
 
-      programs.neovim = {
-        enable = true;
-        defaultEditor = true;
-        extraPackages = [ pkgs.fribidi ];
+programs.neovim = {
+  enable = true;
+  defaultEditor = true;
+  extraPackages = [ pkgs.fribidi pkgs.ripgrep pkgs.wl-clipboard ];
 
-        initLua = ''
-          local opt = vim.opt
+  initLua = ''
+    vim.g.mapleader = " "
 
-          -- Core settings
-          opt.number = true
-          opt.tabstop = 4
-          opt.shiftwidth = 4
-          opt.expandtab = true
-          opt.ignorecase = true
-          opt.smartcase = true
-          opt.autoindent = true
-          opt.cursorline = true
-          opt.hlsearch = true
-          opt.wrap = true
+    -- Core settings
+    vim.opt.number = true
+    vim.opt.relativenumber = true
+    vim.opt.signcolumn = "yes"
+    vim.opt.termguicolors = true
+    vim.cmd.colorscheme("habamax")
+    vim.opt.cursorline = true
+    vim.opt.wrap = true
+    vim.opt.colorcolumn = "100"
+    vim.opt.list = true
+    vim.opt.listchars = { tab = "» ", trail = "·" }
 
-          -- Sway/Wayland clipboard support
-          opt.clipboard = "unnamedplus"
-        '';
-      };
+    vim.opt.updatetime = 250
+    vim.opt.undofile = true
+    -- Sway/Wayland clipboard (provider: wl-clipboard)
+    vim.opt.clipboard = "unnamedplus"
+
+    -- Splits
+    vim.opt.splitright = true
+    vim.opt.splitbelow = true
+
+    -- Indentation
+    vim.opt.tabstop = 4
+    vim.opt.shiftwidth = 4
+    vim.opt.expandtab = true
+
+    -- Search
+    vim.opt.ignorecase = true
+    vim.opt.smartcase = true
+
+    -- Fuzzy file finding
+    vim.opt.path:append("**")
+    vim.opt.wildmode = "longest:full,full"
+    vim.opt.wildignore:append({
+      "*.o", "*.a", "*.rlib", "*.bin", "*.elf", "*.iso", "*.img",
+      "*/.git/*", "*/build/*", "*/target/*",
+    })
+    vim.keymap.set("n", "<leader>f", ":find *", { desc = "Fuzzy find file" })
+    vim.keymap.set("n", "<leader>v", ":vert sfind *", { desc = "Fuzzy find file in vsplit" })
+
+    -- Global search
+    vim.opt.grepprg = "rg --vimgrep --smart-case"
+    vim.opt.grepformat = "%f:%l:%c:%m"
+    vim.keymap.set("n", "<leader>g", ":silent grep ", { desc = "Grep" })
+
+    -- Build system
+    vim.opt.makeprg = "just"
+    vim.keymap.set("n", "<leader>m", "<cmd>make<cr>", { desc = "Build" })
+
+    -- Parse rustc/cargo errors into quickfix even though the command is `just`
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = "rust",
+      callback = function()
+        vim.cmd.compiler("cargo")
+        vim.opt_local.makeprg = "just"
+      end,
+    })
+
+    -- Open quickfix automatically after :make / :grep
+    vim.api.nvim_create_autocmd("QuickFixCmdPost", {
+      pattern = "[^l]*",
+      command = "cwindow",
+    })
+  '';
+};
 
       programs.i3status = {
         enable = true;
@@ -341,10 +417,10 @@
               transform = "270";
             };
             "HDMI-A-1" = {
-    # mode = "3840x2160@60Hz"; # Match your TV specs
-    position = "4520,0";
-    power = "off";
-  };
+              # mode = "3840x2160@60Hz"; # Match your TV specs
+              position = "4520,0";
+              power = "off";
+            };
           };
 
           keybindings = lib.mkOptionDefault {
