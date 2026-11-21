@@ -151,7 +151,6 @@ leeloos = ''
         tidal-hifi
         grim
         slurp
-        wl-clipboard
         fastfetch
         chromium
         wev
@@ -169,7 +168,6 @@ leeloos = ''
         })
         discord
         github-copilot-cli
-        ripgrep
       ];
 
       programs.qutebrowser = {
@@ -298,7 +296,7 @@ leeloos = ''
 programs.neovim = {
   enable = true;
   defaultEditor = true;
-  extraPackages = [ pkgs.fribidi pkgs.ripgrep pkgs.wl-clipboard ];
+  extraPackages = [ pkgs.ripgrep pkgs.wl-clipboard pkgs.universal-ctags ];
 
   initLua = ''
     vim.g.mapleader = " "
@@ -336,17 +334,25 @@ programs.neovim = {
     -- Fuzzy file finding
     vim.opt.path:append("**")
     vim.opt.wildmode = "longest:full,full"
+    vim.opt.wildoptions:append("fuzzy")
     vim.opt.wildignore:append({
       "*.o", "*.a", "*.rlib", "*.bin", "*.elf", "*.iso", "*.img",
       "*/.git/*", "*/build/*", "*/target/*",
     })
-    vim.keymap.set("n", "<leader>f", ":find *", { desc = "Fuzzy find file" })
-    vim.keymap.set("n", "<leader>v", ":vert sfind *", { desc = "Fuzzy find file in vsplit" })
+    vim.keymap.set("n", "<leader>f", ":find ", { desc = "Find file" })
+    vim.keymap.set("n", "<leader>s", ":sfind ", { desc = "Find file in horizontal split" })
+    vim.keymap.set("n", "<leader>v", ":vert sfind ", { desc = "Find file in vsplit" })
+    vim.keymap.set("n", "<leader>t", ":tabfind ", { desc = "Find file in vsplit" })
 
     -- Global search
     vim.opt.grepprg = "rg --vimgrep --smart-case"
     vim.opt.grepformat = "%f:%l:%c:%m"
-    vim.keymap.set("n", "<leader>g", ":silent grep ", { desc = "Grep" })
+    vim.keymap.set("n", "<leader>g", ":silent grep! ", { desc = "Grep" })
+
+    -- Quickfix navigation
+    vim.keymap.set("n", "]q", "<cmd>cnext<CR>zz", { desc = "Next quickfix item" })
+    vim.keymap.set("n", "[q", "<cmd>cprev<CR>zz", { desc = "Previous quickfix item" })
+    vim.keymap.set("n", "<leader>q", "<cmd>cclose<CR>", { desc = "Close quickfix" })
 
     -- Build system
     vim.opt.makeprg = "just"
@@ -366,6 +372,9 @@ programs.neovim = {
       pattern = "[^l]*",
       command = "cwindow",
     })
+
+    -- Configure tags
+    vim.opt.tags = "./tags;,tags"
   '';
 };
 
