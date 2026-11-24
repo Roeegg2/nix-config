@@ -34,10 +34,10 @@
       nixu = "sudo -v && nix flake update --flake ~/nix-config && sudo nixos-rebuild test --flake ~/nix-config#roeetnixos && echo 'Looks fine? Run nixb to keep it.'";
       nixr = "sudo nixos-rebuild switch --rollback";
 
-leeloos = ''
-  cd /home/roeet/Projects/leeloo
-  nix develop -c nvim /home/roeet/Projects/leeloo
-'';
+      leeloos = ''
+        cd /home/roeet/Projects/leeloo
+        nix develop -c nvim /home/roeet/Projects/leeloo
+      '';
     };
 
     sessionVariables = {
@@ -168,6 +168,7 @@ leeloos = ''
         })
         discord
         github-copilot-cli
+        wl-clipboard
       ];
 
       programs.qutebrowser = {
@@ -293,90 +294,149 @@ leeloos = ''
         };
       };
 
-programs.neovim = {
-  enable = true;
-  defaultEditor = true;
-  extraPackages = [ pkgs.ripgrep pkgs.wl-clipboard pkgs.universal-ctags ];
+      programs.neovim = {
+        enable = true;
+        defaultEditor = true;
+        extraPackages = [
+          pkgs.ripgrep
+          pkgs.wl-clipboard
+        ];
 
-  initLua = ''
-    vim.g.mapleader = " "
+        initLua = ''
+          vim.g.mapleader = " "
 
-    -- Core settings
-    vim.opt.number = true
-    vim.opt.relativenumber = true
-    vim.opt.signcolumn = "yes"
-    vim.opt.termguicolors = true
-    vim.cmd.colorscheme("habamax")
-    vim.opt.cursorline = true
-    vim.opt.wrap = true
-    vim.opt.colorcolumn = "100"
-    vim.opt.list = true
-    vim.opt.listchars = { tab = "» ", trail = "·" }
+          -- Core settings
+          vim.opt.number = true
+          vim.opt.relativenumber = true
+          vim.opt.signcolumn = "yes"
+          vim.opt.termguicolors = true
+          vim.cmd.colorscheme("habamax")
+          vim.opt.cursorline = true
+          vim.opt.wrap = true
+          vim.opt.colorcolumn = "100"
+          vim.opt.list = true
+          vim.opt.listchars = { tab = "» ", trail = "·" }
 
-    vim.opt.updatetime = 250
-    vim.opt.undofile = true
-    -- Sway/Wayland clipboard (provider: wl-clipboard)
-    vim.opt.clipboard = "unnamedplus"
+          vim.opt.updatetime = 250
+          vim.opt.undofile = true
+          -- Sway/Wayland clipboard (provider: wl-clipboard)
+          vim.opt.clipboard = "unnamedplus"
 
-    -- Splits
-    vim.opt.splitright = true
-    vim.opt.splitbelow = true
+          -- Splits
+          vim.opt.splitright = true
+          vim.opt.splitbelow = true
 
-    -- Indentation
-    vim.opt.tabstop = 4
-    vim.opt.shiftwidth = 4
-    vim.opt.expandtab = true
+          -- Indentation
+          vim.opt.tabstop = 4
+          vim.opt.shiftwidth = 4
+          vim.opt.expandtab = true
 
-    -- Search
-    vim.opt.ignorecase = true
-    vim.opt.smartcase = true
+          -- Search
+          vim.opt.ignorecase = true
+          vim.opt.smartcase = true
 
-    -- Fuzzy file finding
-    vim.opt.path:append("**")
-    vim.opt.wildmode = "longest:full,full"
-    vim.opt.wildoptions:append("fuzzy")
-    vim.opt.wildignore:append({
-      "*.o", "*.a", "*.rlib", "*.bin", "*.elf", "*.iso", "*.img",
-      "*/.git/*", "*/build/*", "*/target/*",
-    })
-    vim.keymap.set("n", "<leader>f", ":find ", { desc = "Find file" })
-    vim.keymap.set("n", "<leader>s", ":sfind ", { desc = "Find file in horizontal split" })
-    vim.keymap.set("n", "<leader>v", ":vert sfind ", { desc = "Find file in vsplit" })
-    vim.keymap.set("n", "<leader>t", ":tabfind ", { desc = "Find file in vsplit" })
+          -- Netrw
+          vim.keymap.set("n", "<leader>e", ":Ex", { desc = "Open Netrw" })
 
-    -- Global search
-    vim.opt.grepprg = "rg --vimgrep --smart-case"
-    vim.opt.grepformat = "%f:%l:%c:%m"
-    vim.keymap.set("n", "<leader>g", ":silent grep! ", { desc = "Grep" })
+          -- Fuzzy file finding
+          vim.opt.path:append("**")
+          vim.opt.wildmode = "longest:full,full"
+          vim.opt.wildoptions:append("fuzzy")
+          vim.opt.wildignore:append({
+            "*.o", "*.a", "*.rlib", "*.bin", "*.elf", "*.iso", "*.img",
+            "*/.git/*", "*/build/*", "*/target/*",
+          })
+          vim.keymap.set("n", "<leader>f", ":find ", { desc = "Find file" })
+          vim.keymap.set("n", "<leader>s", ":sfind ", { desc = "Find file in horizontal split" })
+          vim.keymap.set("n", "<leader>v", ":vert sfind ", { desc = "Find file in vsplit" })
+          vim.keymap.set("n", "<leader>t", ":tabfind ", { desc = "Find file in vsplit" })
 
-    -- Quickfix navigation
-    vim.keymap.set("n", "]q", "<cmd>cnext<CR>zz", { desc = "Next quickfix item" })
-    vim.keymap.set("n", "[q", "<cmd>cprev<CR>zz", { desc = "Previous quickfix item" })
-    vim.keymap.set("n", "<leader>q", "<cmd>cclose<CR>", { desc = "Close quickfix" })
+          -- Global search
+          vim.opt.grepprg = "rg --vimgrep --smart-case"
+          vim.opt.grepformat = "%f:%l:%c:%m"
+          vim.keymap.set("n", "<leader>g", ":silent grep! ", { desc = "Grep" })
 
-    -- Build system
-    vim.opt.makeprg = "just"
-    vim.keymap.set("n", "<leader>m", "<cmd>make<cr>", { desc = "Build" })
+          -- Quickfix navigation
+          vim.keymap.set("n", "]q", "<cmd>cnext<CR>zz", { desc = "Next quickfix item" })
+          vim.keymap.set("n", "[q", "<cmd>cprev<CR>zz", { desc = "Previous quickfix item" })
+          vim.keymap.set("n", "<leader>q", "<cmd>cclose<CR>", { desc = "Close quickfix" })
 
-    -- Parse rustc/cargo errors into quickfix even though the command is `just`
-    vim.api.nvim_create_autocmd("FileType", {
-      pattern = "rust",
-      callback = function()
-        vim.cmd.compiler("cargo")
-        vim.opt_local.makeprg = "just"
-      end,
-    })
+          -- Build system
+          vim.opt.makeprg = "zig build"
 
-    -- Open quickfix automatically after :make / :grep
-    vim.api.nvim_create_autocmd("QuickFixCmdPost", {
-      pattern = "[^l]*",
-      command = "cwindow",
-    })
+          -- Parse rustc/cargo errors into quickfix even though the command is `just`
+          vim.api.nvim_create_autocmd("FileType", {
+            pattern = "rust",
+            callback = function()
+              vim.cmd.compiler("cargo")
+              vim.opt_local.makeprg = "just"
+            end,
+          })
 
-    -- Configure tags
-    vim.opt.tags = "./tags;,tags"
-  '';
-};
+          -- Open quickfix automatically after :make / :grep
+          vim.api.nvim_create_autocmd("QuickFixCmdPost", {
+            pattern = "[^l]*",
+            command = "cwindow",
+          })
+
+          -- Configure rust-analyzer
+          vim.lsp.config.rust_analyzer = {
+            cmd = { "rust-analyzer" },
+            filetypes = { "rust" },
+            root_markers = { "Cargo.toml", "rust-project.json", ".git" },
+          }
+          -- Enable LSP
+          vim.lsp.enable("rust_analyzer")
+
+          -- DEBUGGING
+            local dbg_bufs = {}
+            
+            local function stop_debug()
+              for _, b in ipairs(dbg_bufs) do
+                if vim.api.nvim_buf_is_valid(b) then
+                  vim.api.nvim_buf_delete(b, { force = true })
+                end
+              end
+              dbg_bufs = {}
+            end
+            
+            local function start_debug()
+              stop_debug()
+              vim.cmd("silent! wall")
+            
+              -- gdb: right-hand column
+              vim.cmd("botright split | terminal gdb -q -x debug/kernel.gdb")
+              local gdb_buf = vim.api.nvim_get_current_buf()
+            
+              -- QEMU: small pane below gdb (serial output shows up here)
+              vim.cmd("rightbelow 12split | terminal just debug")
+              local qemu_buf = vim.api.nvim_get_current_buf()
+            
+              dbg_bufs = { gdb_buf, qemu_buf }
+            
+              -- quitting gdb closes everything and kills QEMU
+              vim.api.nvim_create_autocmd("TermClose", {
+                buffer = gdb_buf,
+                once = true,
+                callback = function()
+                  vim.schedule(function()
+                    if dbg_bufs[1] == gdb_buf then stop_debug() end
+                  end)
+                end,
+              })
+            
+              vim.cmd("wincmd k")
+              vim.cmd("startinsert")
+            end
+            
+            vim.api.nvim_create_user_command("Debug", start_debug, {})
+            vim.api.nvim_create_user_command("DebugStop", stop_debug, {})
+            vim.keymap.set("n", "<leader>dd", start_debug)
+            
+            -- leave terminal mode with Esc Esc (then Ctrl-w works to move between panes)
+            vim.keymap.set("t", "<Esc><Esc>", [[<C-\><C-n>]])
+        '';
+      };
 
       programs.i3status = {
         enable = true;
